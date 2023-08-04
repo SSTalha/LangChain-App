@@ -5,6 +5,9 @@ from langchain.text_splitter import CharacterTextSplitter
 # from langchain.embeddings import OpenAIEmbeddings  # If using openai embedding import this
 from langchain.embeddings import HuggingFaceInstructEmbeddings
 from langchain.vectorstores import FAISS
+from langchain.chat_models import ChatOpenAI
+from langchain.memory import ConversationBufferMemory
+from langchain.chains import ConversationalRetrievalChain
 
 
 
@@ -16,7 +19,7 @@ def get_pdf_text(pdf_docs):
             text += page.extract_text()
     return text
 
-#-------------------------------------------
+#--------------------------------------------
 
 def get_text_chunks(text):
     text_splitter = CharacterTextSplitter(
@@ -32,15 +35,32 @@ def get_text_chunks(text):
 
 def get_vector_store(text_chunks):
     # embeddings = OpenAIEmbeddings()
-    embeddings = HuggingFaceInstructEmbeddings(model_name = "hku-nlp/instructor-xl")
+    embeddings = HuggingFaceInstructEmbeddings(model_name = "hkunlp/instructor-xl")
     vectorstore = FAISS.from_texts(texts=text_chunks, embedding=embeddings)
     return vectorstore
+
+#--------------------------------------------
+#Done using Langchain.chat_models (Chat OpenAI)
+def get_conversation_chain(vector_store):
+    llms = ChatOpenAI()
+    memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+    conversation_chain = ConversationalRetrievalChain.from_llm(
+        llm= llms,
+        retriever=vector_store.as_retreiver(),
+        memory=memory
+    )
+    return conversation_chain
+
+
 
 #--------------------------------------------
 
 def main():
     load_dotenv()
     st.set_page_config(page_title="Chat with PDFs", page_icon=":books:")
+
+    if "conversation" not in st.session_state:
+        st.session_state.conversation = None
 
     st.header("Chat with PDFs :books:")
     st.text_input("Ask a question related to your documents:")
@@ -61,6 +81,10 @@ def main():
 
                 # create vector store
                 vector_store = get_vector_store(text_chunks)
+
+                # create conversation chain
+                st.session_state.conversation = get_conversation_chain(vector_store)
+
 
 
 if __name__  == '__main__':
