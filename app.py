@@ -37,7 +37,7 @@ def get_text_chunks(text):
 
 def get_vector_store(text_chunks):
     # embeddings = OpenAIEmbeddings()
-    embeddings = HuggingFaceInstructEmbeddings(model_name = "sentence-transformers/clip-ViT-L-14")
+    embeddings = HuggingFaceInstructEmbeddings(model_name = "hkunlp/instructor-xl")
     vectorstore = FAISS.from_texts(texts=text_chunks, embedding=embeddings)
     return vectorstore
 
@@ -46,7 +46,7 @@ def get_vector_store(text_chunks):
 def get_conversation_chain(vector_store):
     # Uncomment the ChatOpenAI lib to use the OpenAI llm
     # llms = ChatOpenAI()
-    llms = HuggingFaceHub(repo_id="Kaludi/chatgpt-gpt4-prompts-bart-large-cnn-samsum", model_kwargs={"temperature":0.5, "max_length":512})
+    llms = HuggingFaceHub(repo_id="google/flan-t5-xxl", model_kwargs={"temperature":0.5, "max_length":512})
 
     memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
     conversation_chain = ConversationalRetrievalChain.from_llm(
