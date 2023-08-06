@@ -37,6 +37,7 @@ def get_text_chunks(text):
 
 def get_vector_store(text_chunks):
     # embeddings = OpenAIEmbeddings()
+    # embeddings = HuggingFaceInstructEmbeddings(model_name = "sembeddings/gptops_finetuned_mpnet_gpu_v1")
     embeddings = HuggingFaceInstructEmbeddings(model_name = "hkunlp/instructor-xl")
     vectorstore = FAISS.from_texts(texts=text_chunks, embedding=embeddings)
     return vectorstore
@@ -55,6 +56,27 @@ def get_conversation_chain(vector_store):
         memory=memory
     )
     return conversation_chain
+
+#--------------------------------------------
+#This is a test functon to check if the app will work with a different model
+# def get_conversation_chain(vector_store):
+
+# from sentence_transformers import SentenceTransformer
+# from transformers import AutoModelForCausalLM, AutoTokenizer
+
+#     model_name = "microsoft/DialoGPT-large"
+#     model = AutoModelForCausalLM.from_pretrained(model_name)
+#     tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+#     llms = HuggingFaceHub(repo_id=model_name, model=model, tokenizer=tokenizer)
+
+#     memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+#     conversation_chain = ConversationalRetrievalChain.from_llm(
+#         llm= llms,
+#         retriever=vector_store.as_retreiver(),
+#         memory=memory
+#     )
+#     return conversation_chain
 
 #--------------------------------------------
 
